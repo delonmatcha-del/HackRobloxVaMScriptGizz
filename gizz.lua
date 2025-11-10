@@ -1,255 +1,235 @@
 --============================================================--
--- 🌌 FSSY-X DISCORD × TELEGRAM UI LIBRARY
+-- 🌌 GIZZ SENSI SUPREME UI LIBRARY v4 (FULL REBUILD)
 --============================================================--
--- Author: Fssy Ggf
--- Style: Hybrid Dark Neon (Discord × Telegram)
+-- ⚡ Full UI Library by Fssy Ggf
 --============================================================--
 
-local FSSY = {}
-FSSY.__index = FSSY
-
-local TweenService = game:GetService("TweenService")
+local GizzLib = {}
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
--- Utility
-local function Tween(obj, props, t)
-	TweenService:Create(obj, TweenInfo.new(t or 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
+-- 🧩 THEME
+GizzLib.Theme = {
+    Primary = Color3.fromRGB(0, 162, 255),
+    Background = Color3.fromRGB(20, 20, 20),
+    Sidebar = Color3.fromRGB(25, 25, 25),
+    Button = Color3.fromRGB(30, 30, 30),
+    Text = Color3.fromRGB(240, 240, 240),
+    Accent = Color3.fromRGB(0, 132, 255)
+}
+
+-- 🌟 Smooth Tween
+local function Tween(o, p, t)
+    TweenService:Create(o, TweenInfo.new(t or 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), p):Play()
 end
 
-local function Make(class, props)
-	local o = Instance.new(class)
-	for i, v in pairs(props) do o[i] = v end
-	return o
+-- ⚙️ UI Loader
+function GizzLib:CreateWindow(cfg)
+    local title = cfg.Title or "GIZZ SENSI SUPREME"
+    local iconURL = cfg.IconURL or "https://i.imgur.com/6q5JkDg.png"
+
+    local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    ScreenGui.Name = "GizzSensiUI"
+    ScreenGui.ResetOnSpawn = false
+
+    local Main = Instance.new("Frame", ScreenGui)
+    Main.Size = UDim2.new(0, 640, 0, 400)
+    Main.Position = UDim2.new(0.5, -320, 0.5, -200)
+    Main.BackgroundColor3 = GizzLib.Theme.Background
+    Main.BorderSizePixel = 0
+    Main.Active = true
+    Main.Draggable = true
+
+    local UICorner = Instance.new("UICorner", Main)
+    UICorner.CornerRadius = UDim.new(0, 12)
+
+    -- 🔹 Sidebar
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size = UDim2.new(0, 160, 1, 0)
+    Sidebar.BackgroundColor3 = GizzLib.Theme.Sidebar
+    Sidebar.BorderSizePixel = 0
+
+    local SideLayout = Instance.new("UIListLayout", Sidebar)
+    SideLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    SideLayout.Padding = UDim.new(0, 4)
+
+    local TopTitle = Instance.new("TextLabel", Sidebar)
+    TopTitle.Size = UDim2.new(1, 0, 0, 36)
+    TopTitle.Text = "🌌 " .. title
+    TopTitle.Font = Enum.Font.GothamBold
+    TopTitle.TextColor3 = GizzLib.Theme.Text
+    TopTitle.BackgroundTransparency = 1
+    TopTitle.TextSize = 16
+
+    -- 🔸 Hide/Show Button
+    local Hide = Instance.new("ImageButton", Sidebar)
+    Hide.Size = UDim2.new(0, 36, 0, 36)
+    Hide.Position = UDim2.new(1, -42, 0, 4)
+    Hide.Image = iconURL
+    Hide.BackgroundTransparency = 1
+    Hide.ImageColor3 = GizzLib.Theme.Accent
+
+    local visible = true
+    Hide.MouseButton1Click:Connect(function()
+        visible = not visible
+        if visible then
+            Tween(Main, {Size = UDim2.new(0, 640, 0, 400)}, 0.35)
+        else
+            Tween(Main, {Size = UDim2.new(0, 50, 0, 50)}, 0.35)
+        end
+    end)
+
+    -- 🔸 Content
+    local Content = Instance.new("Frame", Main)
+    Content.Position = UDim2.new(0, 160, 0, 0)
+    Content.Size = UDim2.new(1, -160, 1, 0)
+    Content.BackgroundTransparency = 1
+
+    local PageFolder = Instance.new("Folder", Content)
+    PageFolder.Name = "Pages"
+
+    local ui = {}
+
+    -- =====================================
+    -- 🧭 PAGE CREATOR
+    -- =====================================
+    function ui:CreatePage(name)
+        local page = Instance.new("ScrollingFrame", PageFolder)
+        page.Name = name:gsub("%s", "_")
+        page.Size = UDim2.new(1, 0, 1, 0)
+        page.CanvasSize = UDim2.new(0, 0, 0, 800)
+        page.ScrollBarThickness = 4
+        page.BackgroundTransparency = 1
+        page.Visible = false
+
+        local layout = Instance.new("UIListLayout", page)
+        layout.Padding = UDim.new(0, 8)
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+        -- Sidebar Button
+        local btn = Instance.new("TextButton", Sidebar)
+        btn.Size = UDim2.new(1, -10, 0, 32)
+        btn.Text = "  " .. name
+        btn.TextXAlignment = Enum.TextXAlignment.Left
+        btn.Font = Enum.Font.Gotham
+        btn.TextColor3 = GizzLib.Theme.Text
+        btn.TextSize = 14
+        btn.BackgroundColor3 = GizzLib.Theme.Button
+        btn.AutoButtonColor = false
+
+        btn.MouseEnter:Connect(function()
+            Tween(btn, {BackgroundColor3 = GizzLib.Theme.Primary}, 0.15)
+        end)
+        btn.MouseLeave:Connect(function()
+            Tween(btn, {BackgroundColor3 = GizzLib.Theme.Button}, 0.15)
+        end)
+
+        btn.MouseButton1Click:Connect(function()
+            for _, p in pairs(PageFolder:GetChildren()) do
+                p.Visible = false
+            end
+            page.Visible = true
+        end)
+
+        if #PageFolder:GetChildren() == 1 then
+            page.Visible = true
+        end
+
+        -- 🎛️ Add Components
+        local components = {}
+
+        function components:AddLabel(txt)
+            local l = Instance.new("TextLabel", page)
+            l.Text = txt
+            l.Size = UDim2.new(0, 420, 0, 24)
+            l.BackgroundTransparency = 1
+            l.TextColor3 = GizzLib.Theme.Text
+            l.Font = Enum.Font.Gotham
+            l.TextSize = 14
+            l.TextXAlignment = Enum.TextXAlignment.Left
+            return l
+        end
+
+        function components:AddButton(txt, callback)
+            local b = Instance.new("TextButton", page)
+            b.Text = txt
+            b.Size = UDim2.new(0, 420, 0, 36)
+            b.BackgroundColor3 = GizzLib.Theme.Button
+            b.TextColor3 = GizzLib.Theme.Text
+            b.Font = Enum.Font.GothamBold
+            b.TextSize = 14
+            b.AutoButtonColor = false
+            b.MouseEnter:Connect(function() Tween(b, {BackgroundColor3 = GizzLib.Theme.Primary}, 0.1) end)
+            b.MouseLeave:Connect(function() Tween(b, {BackgroundColor3 = GizzLib.Theme.Button}, 0.1) end)
+            b.MouseButton1Click:Connect(function() pcall(callback) end)
+            return b
+        end
+
+        function components:AddToggle(txt, callback)
+            local frame = Instance.new("Frame", page)
+            frame.Size = UDim2.new(0, 420, 0, 36)
+            frame.BackgroundTransparency = 1
+
+            local lbl = Instance.new("TextLabel", frame)
+            lbl.Text = txt
+            lbl.Size = UDim2.new(0.8, 0, 1, 0)
+            lbl.BackgroundTransparency = 1
+            lbl.TextColor3 = GizzLib.Theme.Text
+            lbl.Font = Enum.Font.Gotham
+            lbl.TextSize = 14
+            lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+            local switch = Instance.new("Frame", frame)
+            switch.Size = UDim2.new(0, 46, 0, 22)
+            switch.Position = UDim2.new(1, -50, 0.5, -11)
+            switch.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            local corner = Instance.new("UICorner", switch)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            local knob = Instance.new("Frame", switch)
+            knob.Size = UDim2.new(0, 18, 0, 18)
+            knob.Position = UDim2.new(0, 2, 0.5, -9)
+            knob.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+            local knCorner = Instance.new("UICorner", knob)
+            knCorner.CornerRadius = UDim.new(1, 0)
+
+            local state = false
+            switch.InputBegan:Connect(function(i)
+                if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                    state = not state
+                    Tween(knob, {Position = state and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}, 0.15)
+                    Tween(switch, {BackgroundColor3 = state and GizzLib.Theme.Primary or Color3.fromRGB(45, 45, 45)}, 0.15)
+                    pcall(callback, state)
+                end
+            end)
+            return switch
+        end
+
+        return components
+    end
+
+    return ui
 end
 
 --============================================================--
--- WINDOW
+-- ✅ USAGE EXAMPLE
 --============================================================--
-function FSSY:CreateWindow(title)
-	local gui = Make("ScreenGui", {Parent = game:GetService("CoreGui"), Name = "FSSY_X_UI"})
-	local main = Make("Frame", {
-		Parent = gui, Size = UDim2.new(0, 600, 0, 400),
-		Position = UDim2.new(0.5, -300, 0.5, -200),
-		BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-	})
-	Make("UICorner", {Parent = main, CornerRadius = UDim.new(0, 12)})
-	Make("UIStroke", {Parent = main, Color = Color3.fromRGB(100, 0, 255), Thickness = 1.5})
+--[[
 
-	-- Glow effect
-	local glow = Make("ImageLabel", {
-		Parent = main, BackgroundTransparency = 1,
-		Image = "rbxassetid://4996891970", ImageColor3 = Color3.fromRGB(120, 0, 255),
-		Size = UDim2.new(1, 60, 1, 60), Position = UDim2.new(0, -30, 0, -30),
-		ImageTransparency = 0.7
-	})
+local UI = GizzLib:CreateWindow({
+    Title = "Fish Go Controller",
+    IconURL = "https://i.imgur.com/2qSvvHs.png"
+})
 
-	local sidebar = Make("Frame", {
-		Parent = main, Size = UDim2.new(0, 140, 1, 0),
-		BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-	})
-	Make("UICorner", {Parent = sidebar, CornerRadius = UDim.new(0, 12)})
+local Page = UI:CreatePage("Auto Fish")
+Page:AddLabel("🎣 Auto Fishing Control")
+Page:AddButton("Start Fishing", function()
+    print("Fishing started...")
+end)
+Page:AddToggle("Auto Catch", function(state)
+    print("Auto Catch:", state)
+end)
 
-	local header = Make("TextLabel", {
-		Parent = sidebar, Size = UDim2.new(1, 0, 0, 50),
-		Text = title, Font = Enum.Font.GothamBold, TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextScaled = true, BackgroundTransparency = 1
-	})
+]]
 
-	local btnContainer = Make("Frame", {
-		Parent = sidebar, Size = UDim2.new(1, 0, 1, -50),
-		Position = UDim2.new(0, 0, 0, 50), BackgroundTransparency = 1
-	})
-	local btnList = Make("UIListLayout", {Parent = btnContainer, Padding = UDim.new(0, 6)})
-
-	local content = Make("Frame", {
-		Parent = main, Size = UDim2.new(1, -150, 1, -20),
-		Position = UDim2.new(0, 150, 0, 10), BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-	})
-	Make("UICorner", {Parent = content, CornerRadius = UDim.new(0, 10)})
-
-	local layout = Make("UIListLayout", {Parent = content, Padding = UDim.new(0, 6)})
-
-	-- Draggable
-	local dragging, dragStart, startPos
-	header.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = main.Position
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
-	UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
-	end)
-
-	local Window = {Body = content, Sidebar = btnContainer}
-
-	--============================================================--
-	-- BUTTON
-	--============================================================--
-	function Window:AddButton(label, callback)
-		local btn = Make("TextButton", {
-			Parent = self.Body, Size = UDim2.new(1, -10, 0, 40),
-			Text = label, Font = Enum.Font.GothamBold, TextScaled = true,
-			TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-		})
-		Make("UICorner", {Parent = btn, CornerRadius = UDim.new(0, 8)})
-		btn.MouseButton1Click:Connect(function()
-			Tween(btn, {BackgroundColor3 = Color3.fromRGB(100, 0, 255)}, 0.15)
-			task.wait(0.15)
-			Tween(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}, 0.15)
-			callback()
-		end)
-	end
-
-	--============================================================--
-	-- SWITCH
-	--============================================================--
-	function Window:AddSwitch(label, default, callback)
-		local frame = Make("Frame", {
-			Parent = self.Body, Size = UDim2.new(1, -10, 0, 40),
-			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-		})
-		Make("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 8)})
-
-		local txt = Make("TextLabel", {
-			Parent = frame, Size = UDim2.new(0.7, 0, 1, 0),
-			Text = label, BackgroundTransparency = 1, TextScaled = true,
-			TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamSemibold
-		})
-
-		local toggle = Make("TextButton", {
-			Parent = frame, Size = UDim2.new(0.25, 0, 0.8, 0),
-			Position = UDim2.new(0.72, 0, 0.1, 0),
-			Text = default and "ON" or "OFF", Font = Enum.Font.GothamBold,
-			TextScaled = true, BackgroundColor3 = default and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80),
-			TextColor3 = Color3.fromRGB(255, 255, 255)
-		})
-		Make("UICorner", {Parent = toggle, CornerRadius = UDim.new(0, 8)})
-		local state = default
-		toggle.MouseButton1Click:Connect(function()
-			state = not state
-			toggle.Text = state and "ON" or "OFF"
-			Tween(toggle, {BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80)}, 0.2)
-			callback(state)
-		end)
-	end
-
-	--============================================================--
-	-- SLIDER
-	--============================================================--
-	function Window:AddSlider(label, min, max, def, callback)
-		local frame = Make("Frame", {
-			Parent = self.Body, Size = UDim2.new(1, -10, 0, 45),
-			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-		})
-		Make("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 8)})
-
-		local txt = Make("TextLabel", {
-			Parent = frame, Size = UDim2.new(1, 0, 0.4, 0),
-			Text = label.." ("..def..")", BackgroundTransparency = 1,
-			TextColor3 = Color3.fromRGB(255, 255, 255), TextScaled = true, Font = Enum.Font.GothamSemibold
-		})
-		local bar = Make("Frame", {
-			Parent = frame, Size = UDim2.new(0.9, 0, 0.3, 0), Position = UDim2.new(0.05, 0, 0.6, 0),
-			BackgroundColor3 = Color3.fromRGB(70, 70, 90)
-		})
-		Make("UICorner", {Parent = bar, CornerRadius = UDim.new(0, 8)})
-		local fill = Make("Frame", {
-			Parent = bar, Size = UDim2.new(def / max, 0, 1, 0),
-			BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-		})
-		Make("UICorner", {Parent = fill, CornerRadius = UDim.new(0, 8)})
-
-		local dragging = false
-		bar.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
-		end)
-		UserInputService.InputEnded:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
-		end)
-		UserInputService.InputChanged:Connect(function(input)
-			if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-				local p = math.clamp((input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-				fill.Size = UDim2.new(p, 0, 1, 0)
-				local val = math.floor(min + (max - min) * p)
-				txt.Text = label.." ("..val..")"
-				callback(val)
-			end
-		end)
-	end
-
-	--============================================================--
-	-- DROPDOWN
-	--============================================================--
-	function Window:AddDropdown(label, list, callback)
-		local frame = Make("Frame", {
-			Parent = self.Body, Size = UDim2.new(1, -10, 0, 40),
-			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-		})
-		Make("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 8)})
-
-		local btn = Make("TextButton", {
-			Parent = frame, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-			Text = label.." ▼", Font = Enum.Font.GothamSemibold, TextScaled = true,
-			TextColor3 = Color3.fromRGB(255, 255, 255)
-		})
-
-		local drop = Make("Frame", {
-			Parent = frame, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 1, 0),
-			BackgroundColor3 = Color3.fromRGB(35, 35, 50), ClipsDescendants = true
-		})
-		local layout = Make("UIListLayout", {Parent = drop})
-		local open = false
-		for _, v in ipairs(list) do
-			local opt = Make("TextButton", {
-				Parent = drop, Text = v, Size = UDim2.new(1, 0, 0, 30),
-				BackgroundColor3 = Color3.fromRGB(50, 50, 80), TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextScaled = true, Font = Enum.Font.GothamSemibold
-			})
-			Make("UICorner", {Parent = opt, CornerRadius = UDim.new(0, 6)})
-			opt.MouseButton1Click:Connect(function()
-				btn.Text = label.." : "..v
-				Tween(drop, {Size = UDim2.new(1, 0, 0, 0)}, 0.2)
-				open = false
-				callback(v)
-			end)
-		end
-		btn.MouseButton1Click:Connect(function()
-			open = not open
-			Tween(drop, {Size = open and UDim2.new(1, 0, 0, #list * 30) or UDim2.new(1, 0, 0, 0)}, 0.25)
-		end)
-	end
-
-	--============================================================--
-	-- NOTIFY
-	--============================================================--
-	function Window:Notify(text, dur)
-		local nf = Make("Frame", {
-			Parent = self.Body, Size = UDim2.new(1, -20, 0, 35),
-			BackgroundColor3 = Color3.fromRGB(70, 70, 90)
-		})
-		Make("UICorner", {Parent = nf, CornerRadius = UDim.new(0, 8)})
-		local t = Make("TextLabel", {
-			Parent = nf, Text = text, Size = UDim2.new(1, 0, 1, 0),
-			TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 1,
-			TextScaled = true, Font = Enum.Font.GothamBold
-		})
-		Tween(nf, {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}, 0.25)
-		task.wait(dur or 2)
-		Tween(nf, {BackgroundTransparency = 1}, 0.3)
-		task.wait(0.3)
-		nf:Destroy()
-	end
-
-	return Window
-end
-
-return FSSY
+return GizzLib
