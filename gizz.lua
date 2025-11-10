@@ -1,247 +1,255 @@
--- =====================================================
--- 🌌 GIZZ-X UI Library | Inspired by Supreme Aesthetic
--- Author: Fssy
--- =====================================================
+--============================================================--
+-- 🌌 FSSY-X DISCORD × TELEGRAM UI LIBRARY
+--============================================================--
+-- Author: Fssy Ggf
+-- Style: Hybrid Dark Neon (Discord × Telegram)
+--============================================================--
 
-local GizzX = {}
-GizzX.__index = GizzX
+local FSSY = {}
+FSSY.__index = FSSY
 
--- Theme config
-local Theme = {
-    GlowColor = Color3.fromRGB(0, 255, 170),
-    TextColor = Color3.fromRGB(255, 255, 255),
-    Background = Color3.fromRGB(20, 20, 20),
-    Accent = Color3.fromRGB(30, 30, 30),
-}
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 -- Utility
-local function createGlow(obj)
-    local glow = Instance.new("UIStroke")
-    glow.Thickness = 1.8
-    glow.Color = Theme.GlowColor
-    glow.Transparency = 0.3
-    glow.Parent = obj
+local function Tween(obj, props, t)
+	TweenService:Create(obj, TweenInfo.new(t or 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
 end
 
--- Create base window
-function GizzX:CreateWindow(title)
-    local screen = Instance.new("ScreenGui", game.CoreGui)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 400, 0, 420)
-    frame.Position = UDim2.new(0.3, 0, 0.3, 0)
-    frame.BackgroundColor3 = Theme.Background
-    frame.BorderSizePixel = 0
-    frame.Parent = screen
-    frame.Active = true
-    frame.Draggable = true
-
-    createGlow(frame)
-
-    local titleLbl = Instance.new("TextLabel", frame)
-    titleLbl.Size = UDim2.new(1, 0, 0, 45)
-    titleLbl.BackgroundTransparency = 1
-    titleLbl.Text = "⚡ " .. title
-    titleLbl.Font = Enum.Font.GothamBold
-    titleLbl.TextSize = 20
-    titleLbl.TextColor3 = Theme.TextColor
-
-    local container = Instance.new("Frame", frame)
-    container.Size = UDim2.new(1, -20, 1, -60)
-    container.Position = UDim2.new(0, 10, 0, 50)
-    container.BackgroundTransparency = 1
-
-    local layout = Instance.new("UIListLayout", container)
-    layout.Padding = UDim.new(0, 10)
-
-    self.container = container
-    return setmetatable({container = container, screen = screen}, GizzX)
+local function Make(class, props)
+	local o = Instance.new(class)
+	for i, v in pairs(props) do o[i] = v end
+	return o
 end
 
--- Switch
-function GizzX:AddSwitch(text, default, callback)
-    local holder = Instance.new("Frame", self.container)
-    holder.Size = UDim2.new(1, 0, 0, 35)
-    holder.BackgroundColor3 = Theme.Accent
-    holder.BorderSizePixel = 0
-    createGlow(holder)
+--============================================================--
+-- WINDOW
+--============================================================--
+function FSSY:CreateWindow(title)
+	local gui = Make("ScreenGui", {Parent = game:GetService("CoreGui"), Name = "FSSY_X_UI"})
+	local main = Make("Frame", {
+		Parent = gui, Size = UDim2.new(0, 600, 0, 400),
+		Position = UDim2.new(0.5, -300, 0.5, -200),
+		BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+	})
+	Make("UICorner", {Parent = main, CornerRadius = UDim.new(0, 12)})
+	Make("UIStroke", {Parent = main, Color = Color3.fromRGB(100, 0, 255), Thickness = 1.5})
 
-    local label = Instance.new("TextLabel", holder)
-    label.Size = UDim2.new(0.7, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 16
-    label.TextColor3 = Theme.TextColor
-    label.TextXAlignment = Enum.TextXAlignment.Left
+	-- Glow effect
+	local glow = Make("ImageLabel", {
+		Parent = main, BackgroundTransparency = 1,
+		Image = "rbxassetid://4996891970", ImageColor3 = Color3.fromRGB(120, 0, 255),
+		Size = UDim2.new(1, 60, 1, 60), Position = UDim2.new(0, -30, 0, -30),
+		ImageTransparency = 0.7
+	})
 
-    local button = Instance.new("TextButton", holder)
-    button.Size = UDim2.new(0.25, 0, 0.7, 0)
-    button.Position = UDim2.new(0.7, 10, 0.15, 0)
-    button.Text = default and "ON" or "OFF"
-    button.BackgroundColor3 = default and Theme.GlowColor or Color3.fromRGB(50, 50, 50)
-    button.TextColor3 = Theme.TextColor
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    createGlow(button)
+	local sidebar = Make("Frame", {
+		Parent = main, Size = UDim2.new(0, 140, 1, 0),
+		BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+	})
+	Make("UICorner", {Parent = sidebar, CornerRadius = UDim.new(0, 12)})
 
-    local state = default
-    button.MouseButton1Click:Connect(function()
-        state = not state
-        button.Text = state and "ON" or "OFF"
-        button.BackgroundColor3 = state and Theme.GlowColor or Color3.fromRGB(50, 50, 50)
-        callback(state)
-    end)
+	local header = Make("TextLabel", {
+		Parent = sidebar, Size = UDim2.new(1, 0, 0, 50),
+		Text = title, Font = Enum.Font.GothamBold, TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextScaled = true, BackgroundTransparency = 1
+	})
+
+	local btnContainer = Make("Frame", {
+		Parent = sidebar, Size = UDim2.new(1, 0, 1, -50),
+		Position = UDim2.new(0, 0, 0, 50), BackgroundTransparency = 1
+	})
+	local btnList = Make("UIListLayout", {Parent = btnContainer, Padding = UDim.new(0, 6)})
+
+	local content = Make("Frame", {
+		Parent = main, Size = UDim2.new(1, -150, 1, -20),
+		Position = UDim2.new(0, 150, 0, 10), BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	})
+	Make("UICorner", {Parent = content, CornerRadius = UDim.new(0, 10)})
+
+	local layout = Make("UIListLayout", {Parent = content, Padding = UDim.new(0, 6)})
+
+	-- Draggable
+	local dragging, dragStart, startPos
+	header.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local delta = input.Position - dragStart
+			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+	end)
+
+	local Window = {Body = content, Sidebar = btnContainer}
+
+	--============================================================--
+	-- BUTTON
+	--============================================================--
+	function Window:AddButton(label, callback)
+		local btn = Make("TextButton", {
+			Parent = self.Body, Size = UDim2.new(1, -10, 0, 40),
+			Text = label, Font = Enum.Font.GothamBold, TextScaled = true,
+			TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+		})
+		Make("UICorner", {Parent = btn, CornerRadius = UDim.new(0, 8)})
+		btn.MouseButton1Click:Connect(function()
+			Tween(btn, {BackgroundColor3 = Color3.fromRGB(100, 0, 255)}, 0.15)
+			task.wait(0.15)
+			Tween(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}, 0.15)
+			callback()
+		end)
+	end
+
+	--============================================================--
+	-- SWITCH
+	--============================================================--
+	function Window:AddSwitch(label, default, callback)
+		local frame = Make("Frame", {
+			Parent = self.Body, Size = UDim2.new(1, -10, 0, 40),
+			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+		})
+		Make("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 8)})
+
+		local txt = Make("TextLabel", {
+			Parent = frame, Size = UDim2.new(0.7, 0, 1, 0),
+			Text = label, BackgroundTransparency = 1, TextScaled = true,
+			TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamSemibold
+		})
+
+		local toggle = Make("TextButton", {
+			Parent = frame, Size = UDim2.new(0.25, 0, 0.8, 0),
+			Position = UDim2.new(0.72, 0, 0.1, 0),
+			Text = default and "ON" or "OFF", Font = Enum.Font.GothamBold,
+			TextScaled = true, BackgroundColor3 = default and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80),
+			TextColor3 = Color3.fromRGB(255, 255, 255)
+		})
+		Make("UICorner", {Parent = toggle, CornerRadius = UDim.new(0, 8)})
+		local state = default
+		toggle.MouseButton1Click:Connect(function()
+			state = not state
+			toggle.Text = state and "ON" or "OFF"
+			Tween(toggle, {BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80)}, 0.2)
+			callback(state)
+		end)
+	end
+
+	--============================================================--
+	-- SLIDER
+	--============================================================--
+	function Window:AddSlider(label, min, max, def, callback)
+		local frame = Make("Frame", {
+			Parent = self.Body, Size = UDim2.new(1, -10, 0, 45),
+			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+		})
+		Make("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 8)})
+
+		local txt = Make("TextLabel", {
+			Parent = frame, Size = UDim2.new(1, 0, 0.4, 0),
+			Text = label.." ("..def..")", BackgroundTransparency = 1,
+			TextColor3 = Color3.fromRGB(255, 255, 255), TextScaled = true, Font = Enum.Font.GothamSemibold
+		})
+		local bar = Make("Frame", {
+			Parent = frame, Size = UDim2.new(0.9, 0, 0.3, 0), Position = UDim2.new(0.05, 0, 0.6, 0),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+		})
+		Make("UICorner", {Parent = bar, CornerRadius = UDim.new(0, 8)})
+		local fill = Make("Frame", {
+			Parent = bar, Size = UDim2.new(def / max, 0, 1, 0),
+			BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		})
+		Make("UICorner", {Parent = fill, CornerRadius = UDim.new(0, 8)})
+
+		local dragging = false
+		bar.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
+		end)
+		UserInputService.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+		end)
+		UserInputService.InputChanged:Connect(function(input)
+			if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+				local p = math.clamp((input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+				fill.Size = UDim2.new(p, 0, 1, 0)
+				local val = math.floor(min + (max - min) * p)
+				txt.Text = label.." ("..val..")"
+				callback(val)
+			end
+		end)
+	end
+
+	--============================================================--
+	-- DROPDOWN
+	--============================================================--
+	function Window:AddDropdown(label, list, callback)
+		local frame = Make("Frame", {
+			Parent = self.Body, Size = UDim2.new(1, -10, 0, 40),
+			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+		})
+		Make("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 8)})
+
+		local btn = Make("TextButton", {
+			Parent = frame, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+			Text = label.." ▼", Font = Enum.Font.GothamSemibold, TextScaled = true,
+			TextColor3 = Color3.fromRGB(255, 255, 255)
+		})
+
+		local drop = Make("Frame", {
+			Parent = frame, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 1, 0),
+			BackgroundColor3 = Color3.fromRGB(35, 35, 50), ClipsDescendants = true
+		})
+		local layout = Make("UIListLayout", {Parent = drop})
+		local open = false
+		for _, v in ipairs(list) do
+			local opt = Make("TextButton", {
+				Parent = drop, Text = v, Size = UDim2.new(1, 0, 0, 30),
+				BackgroundColor3 = Color3.fromRGB(50, 50, 80), TextColor3 = Color3.fromRGB(255, 255, 255),
+				TextScaled = true, Font = Enum.Font.GothamSemibold
+			})
+			Make("UICorner", {Parent = opt, CornerRadius = UDim.new(0, 6)})
+			opt.MouseButton1Click:Connect(function()
+				btn.Text = label.." : "..v
+				Tween(drop, {Size = UDim2.new(1, 0, 0, 0)}, 0.2)
+				open = false
+				callback(v)
+			end)
+		end
+		btn.MouseButton1Click:Connect(function()
+			open = not open
+			Tween(drop, {Size = open and UDim2.new(1, 0, 0, #list * 30) or UDim2.new(1, 0, 0, 0)}, 0.25)
+		end)
+	end
+
+	--============================================================--
+	-- NOTIFY
+	--============================================================--
+	function Window:Notify(text, dur)
+		local nf = Make("Frame", {
+			Parent = self.Body, Size = UDim2.new(1, -20, 0, 35),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+		})
+		Make("UICorner", {Parent = nf, CornerRadius = UDim.new(0, 8)})
+		local t = Make("TextLabel", {
+			Parent = nf, Text = text, Size = UDim2.new(1, 0, 1, 0),
+			TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 1,
+			TextScaled = true, Font = Enum.Font.GothamBold
+		})
+		Tween(nf, {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}, 0.25)
+		task.wait(dur or 2)
+		Tween(nf, {BackgroundTransparency = 1}, 0.3)
+		task.wait(0.3)
+		nf:Destroy()
+	end
+
+	return Window
 end
 
--- Dropdown
-function GizzX:AddDropdown(text, options, callback)
-    local frame = Instance.new("Frame", self.container)
-    frame.Size = UDim2.new(1, 0, 0, 40)
-    frame.BackgroundColor3 = Theme.Accent
-    frame.BorderSizePixel = 0
-    createGlow(frame)
-
-    local label = Instance.new("TextLabel", frame)
-    label.Size = UDim2.new(1, -20, 0.5, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 16
-    label.TextColor3 = Theme.TextColor
-    label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local dropdown = Instance.new("TextButton", frame)
-    dropdown.Size = UDim2.new(1, -20, 0.5, -5)
-    dropdown.Position = UDim2.new(0, 10, 0.5, 0)
-    dropdown.Text = "Select..."
-    dropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    dropdown.TextColor3 = Theme.TextColor
-    dropdown.Font = Enum.Font.GothamBold
-    dropdown.TextSize = 14
-    createGlow(dropdown)
-
-    local menu = Instance.new("Frame", frame)
-    menu.Size = UDim2.new(1, -20, 0, #options * 25)
-    menu.Position = UDim2.new(0, 10, 1, 0)
-    menu.Visible = false
-    menu.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    menu.BorderSizePixel = 0
-    createGlow(menu)
-
-    for _, v in ipairs(options) do
-        local opt = Instance.new("TextButton", menu)
-        opt.Size = UDim2.new(1, 0, 0, 25)
-        opt.Text = v
-        opt.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        opt.TextColor3 = Theme.TextColor
-        opt.Font = Enum.Font.Gotham
-        opt.TextSize = 14
-        opt.MouseButton1Click:Connect(function()
-            dropdown.Text = v
-            menu.Visible = false
-            callback(v)
-        end)
-    end
-
-    dropdown.MouseButton1Click:Connect(function()
-        menu.Visible = not menu.Visible
-    end)
-end
-
--- Slider
-function GizzX:AddSlider(text, min, max, default, callback)
-    local frame = Instance.new("Frame", self.container)
-    frame.Size = UDim2.new(1, 0, 0, 40)
-    frame.BackgroundColor3 = Theme.Accent
-    frame.BorderSizePixel = 0
-    createGlow(frame)
-
-    local label = Instance.new("TextLabel", frame)
-    label.Size = UDim2.new(1, -20, 0.5, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 16
-    label.TextColor3 = Theme.TextColor
-    label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local slider = Instance.new("Frame", frame)
-    slider.Size = UDim2.new(1, -20, 0.2, 0)
-    slider.Position = UDim2.new(0, 10, 0.6, 0)
-    slider.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-
-    local fill = Instance.new("Frame", slider)
-    fill.BackgroundColor3 = Theme.GlowColor
-    fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-
-    local val = default
-    local input = slider.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local move; move = game:GetService("UserInputService").InputChanged:Connect(function(changed)
-                if changed.UserInputType == Enum.UserInputType.MouseMovement then
-                    local x = math.clamp((changed.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
-                    fill.Size = UDim2.new(x, 0, 1, 0)
-                    val = math.floor(min + (max - min) * x)
-                    callback(val)
-                end
-            end)
-            game:GetService("UserInputService").InputEnded:Connect(function(e)
-                if e.UserInputType == Enum.UserInputType.MouseButton1 then
-                    move:Disconnect()
-                end
-            end)
-        end
-    end)
-end
-
--- Color Picker
-function GizzX:AddColorPicker(text, callback)
-    local frame = Instance.new("Frame", self.container)
-    frame.Size = UDim2.new(1, 0, 0, 35)
-    frame.BackgroundColor3 = Theme.Accent
-    createGlow(frame)
-
-    local label = Instance.new("TextLabel", frame)
-    label.Size = UDim2.new(0.7, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 16
-    label.TextColor3 = Theme.TextColor
-    label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local button = Instance.new("TextButton", frame)
-    button.Size = UDim2.new(0.25, 0, 0.7, 0)
-    button.Position = UDim2.new(0.7, 10, 0.15, 0)
-    button.BackgroundColor3 = Theme.GlowColor
-    button.Text = "Pick"
-    button.TextColor3 = Theme.TextColor
-    createGlow(button)
-
-    button.MouseButton1Click:Connect(function()
-        local color = Color3.fromHSV(math.random(), 1, 1)
-        button.BackgroundColor3 = color
-        callback(color)
-    end)
-end
-
--- Notification
-function GizzX:Notify(text, duration)
-    local msg = Instance.new("TextLabel", self.screen)
-    msg.Size = UDim2.new(0, 250, 0, 40)
-    msg.Position = UDim2.new(0.7, 0, 0.1, 0)
-    msg.BackgroundColor3 = Theme.Accent
-    msg.Text = text
-    msg.Font = Enum.Font.GothamBold
-    msg.TextSize = 16
-    msg.TextColor3 = Theme.TextColor
-    msg.BorderSizePixel = 0
-    msg.BackgroundTransparency = 0.1
-    createGlow(msg)
-    game:GetService("TweenService"):Create(msg, TweenInfo.new(0.5), {BackgroundTransparency = 0.3}):Play()
-    task.delay(duration or 3, function()
-        msg:Destroy()
-    end)
-end
-
-return GizzX
+return FSSY
